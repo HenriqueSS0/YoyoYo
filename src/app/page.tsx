@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
-import { ArrowUpRight, Menu } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -12,8 +12,16 @@ const basePath = isProd ? "/YoyoYo" : "";
 
 export default function YoyoyoPage() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
     gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
@@ -70,25 +78,29 @@ export default function YoyoyoPage() {
           }
         );
       });
-      
-      // 5. Staggered fade in for product cards
-      gsap.fromTo(
+
+      // 5. Staggered fade in for product cards — ENTRANCE (triggers when cards first appear at bottom)
+      const productEnterAnim = gsap.fromTo(
         ".product-card",
         { opacity: 0, y: 150 },
         {
           opacity: 1,
           y: 0,
-          duration: 0.8,
-          stagger: 0.2,
+          duration: 0.4,
+          stagger: 0.1,
           ease: "power2.out",
-          scrollTrigger: {
-            trigger: ".products-grid",
-            start: "top 80%",
-            onEnter: (self) => { self.animation?.timeScale(1); self.animation?.play(); },
-            onLeaveBack: (self) => { self.animation?.timeScale(6); self.animation?.reverse(); }
-          }
+          paused: true,
         }
       );
+
+      // 5. Staggered card animation — trigger on the grid itself, not the section
+      // This ensures animation fires when the CARDS are actually entering the viewport
+      ScrollTrigger.create({
+        trigger: ".products-grid",
+        start: "top 80%",
+        onEnter: () => { productEnterAnim.timeScale(1).play(); },
+        onLeaveBack: () => { productEnterAnim.timeScale(5).reverse(); }
+      });
 
       // 6. Footer animation (bottom to top)
       gsap.fromTo(
@@ -110,85 +122,127 @@ export default function YoyoyoPage() {
     }, containerRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [isMounted]);
 
-  const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, target: string) => {
-    e.preventDefault();
+  if (!isMounted) {
+    return <div className="min-h-screen bg-[#050505]" />;
+  }
+
+  const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement> | React.MouseEvent<HTMLButtonElement>, target: string) => {
+    if (e) e.preventDefault();
     const element = document.querySelector(target);
     if (element) {
-      const offset = 80;
-      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-      const offsetPosition = elementPosition - offset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
+      element.scrollIntoView({ behavior: "smooth" });
+      // Refresh ScrollTrigger to ensure animations play correctly after teleporting
+      setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 500); // Give smooth scroll some time
     }
   };
 
   return (
     <div ref={containerRef} className="min-h-screen bg-[#050505] text-white font-sans selection:bg-[#FF3EBD] selection:text-white" suppressHydrationWarning>
       {/* NAVIGATION */}
-      <nav className="navbar-anim opacity-0 fixed top-0 left-0 w-full z-50 py-6 px-6 md:px-12 flex justify-between items-center backdrop-blur-sm bg-[#050505]/40">
+      <nav className="navbar-anim opacity-0 fixed top-0 left-0 w-full z-50 py-6 px-6 md:px-12 flex justify-between items-center backdrop-blur-sm bg-[#050505]/40 pointer-events-auto">
         <Link href="/" className="font-display text-2xl md:text-3xl text-[#FF3EBD] tracking-tighter z-10">
           YOYOYO
         </Link>
 
-        <div className="hidden md:flex gap-10 text-[10px] md:text-xs font-semibold tracking-widest text-white/70 uppercase">
-          <Link href="#home" onClick={(e) => handleScrollTo(e, '#home')} className="hover:text-white transition-colors">Home</Link>
-          <Link href="#about" onClick={(e) => handleScrollTo(e, '#about')} className="hover:text-white transition-colors">About</Link>
-          <Link href="#products" onClick={(e) => handleScrollTo(e, '#products')} className="hover:text-white transition-colors">Products</Link>
-          <Link href="#play" onClick={(e) => handleScrollTo(e, '#play')} className="hover:text-white transition-colors">Play</Link>
+        <div className="hidden md:flex gap-10 text-[10px] md:text-xs font-semibold tracking-widest text-white/70 uppercase pointer-events-auto">
+          <a href="#home" onClick={(e) => handleScrollTo(e, '#home')} className="hover:text-white transition-colors cursor-pointer">Home</a>
+          <a href="#about" onClick={(e) => handleScrollTo(e, '#about')} className="hover:text-white transition-colors cursor-pointer">About</a>
+          <a href="#products" onClick={(e) => handleScrollTo(e, '#products')} className="hover:text-white transition-colors cursor-pointer">Products</a>
+          <a href="#play" onClick={(e) => handleScrollTo(e, '#play')} className="hover:text-white transition-colors cursor-pointer">Play</a>
         </div>
 
         <div className="flex items-center gap-6 text-[10px] md:text-xs font-semibold tracking-widest uppercase z-10">
           <span className="hidden md:block">Cart (0)</span>
-          <button className="w-10 h-10 rounded-full border border-[#C6FF00] flex items-center justify-center text-[#C6FF00] hover:bg-[#C6FF00] hover:text-black transition-colors">
+          <button
+            onClick={() => setIsMenuOpen(true)}
+            className="w-10 h-10 rounded-full border border-[#C6FF00] flex items-center justify-center text-[#C6FF00] hover:bg-[#C6FF00] hover:text-black transition-colors pointer-events-auto"
+          >
             <Menu size={18} />
           </button>
         </div>
       </nav>
 
-      {/* HERO SECTION */}
-      <section id="home" className="hero-section relative w-full min-h-[100svh] flex flex-col md:flex-row md:items-center px-6 md:px-12 pt-28 md:pt-32 pb-12 overflow-hidden md:overflow-visible">
-
-        {/* HERO CONTENT */}
-        <div className="relative z-20 w-full md:w-[60%] max-w-[600px] mt-10 md:mt-0 pointer-events-auto">
-          <h2 className="hero-text opacity-0 font-display text-[15vw] sm:text-6xl md:text-7xl lg:text-[90px] leading-[1] tracking-tight mb-6 text-white">
-            MADE<br />TO PLAY.<br />BUILT TO<br />CONNECT.
-          </h2>
-          <button className="hero-text opacity-0 bg-[#C6FF00] text-black font-display font-black uppercase tracking-wider text-sm md:text-base py-3 md:py-4 px-8 md:px-10 rounded-xl hover:bg-white transition-colors w-fit">
-            START PLAYING
+      {/* MOBILE MENU OVERLAY */}
+      <div className={`fixed inset-0 bg-[#050505] z-[100] transition-transform duration-500 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'} flex flex-col p-8 md:hidden`}>
+        <div className="flex justify-between items-center mb-16">
+          <Link href="/" className="font-display text-2xl font-black italic tracking-tighter text-[#FF3EBD]">YOYOYO</Link>
+          <button onClick={() => setIsMenuOpen(false)} className="w-10 h-10 rounded-full border border-[#C6FF00] flex items-center justify-center text-[#C6FF00]">
+            <X size={20} />
           </button>
         </div>
 
-        {/* HERO YOYO IMAGE */}
-        <div className="hero-img-wrapper absolute top-[55vh] md:bottom-auto md:top-1/2 right-[-15%] md:-translate-y-1/2 md:right-0 z-10 w-[131%] sm:w-[120%] md:w-[60%] pointer-events-none flex justify-end opacity-0">
-          <img
-            src={`${basePath}/images/hero.webp`}
-            alt="Yoyoyo Neon Hero"
-            className="parallax-yoyo w-full max-w-none h-auto drop-shadow-2xl animate-float-slow"
-          />
-        </div>
+        <nav className="flex flex-col gap-8">
+          {['HOME', 'ABOUT', 'PRODUCTS', 'PLAY'].map((item) => (
+            <a
+              key={item}
+              href={`#${item.toLowerCase()}`}
+              onClick={(e) => {
+                setIsMenuOpen(false);
+                handleScrollTo(e, `#${item.toLowerCase()}`);
+              }}
+              className="font-display text-5xl font-black italic text-white hover:text-[#C6FF00] transition-colors cursor-pointer"
+            >
+              {item}
+            </a>
+          ))}
+        </nav>
 
-        {/* BOTTOM RIGHT TEXT */}
-        <div className="hero-text absolute bottom-8 md:bottom-12 right-6 md:right-12 text-right z-20 pointer-events-none opacity-0">
-          <p className="text-[#A855F7] font-sans font-bold text-[8px] md:text-[10px] tracking-widest uppercase">
-            Created for players.<br />Connected by passion.
-          </p>
+        <div className="mt-auto pt-8 border-t border-white/10 flex flex-col gap-4">
+          <p className="text-[#A855F7] text-[10px] font-bold tracking-widest uppercase">CREATED FOR PLAYERS. CONNECTED BY PASSION.</p>
+          <div className="flex justify-between text-xs text-white/50">
+            <span>© 2024 YOYOYO</span>
+            <span>CART (0)</span>
+          </div>
+        </div>
+      </div>
+
+      {/* HERO SECTION - Single Screen Strategy */}
+      <section id="home" className="hero-section relative w-full min-h-[100svh] flex items-center justify-center pt-28 md:pt-32 pb-8 sm:pb-12 overflow-hidden px-6 sm:px-12">
+
+        {/* Protection Container */}
+        <div className="max-w-[1400px] mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-12">
+
+          {/* HERO CONTENT */}
+          <div className="hero-content relative z-20 w-full sm:w-[50%] flex flex-col items-center sm:items-start text-center sm:text-left pointer-events-auto">
+            <h2 className="hero-text opacity-0 font-display text-[clamp(2rem,10vw,5.5rem)] leading-[0.9] tracking-tight mb-6 sm:mb-8 text-white uppercase font-black">
+              MADE<br />TO PLAY.<br />BUILT TO<br />CONNECT.
+            </h2>
+            <button className="hero-text opacity-0 bg-[#C6FF00] text-black font-display font-black uppercase tracking-wider text-sm md:text-base py-3 px-10 sm:py-4 sm:px-12 rounded-xl hover:bg-white transition-colors w-fit">
+              START PLAYING
+            </button>
+          </div>
+
+          {/* HERO YOYO IMAGE - Compact sizing for mobile to avoid scroll */}
+          <div className="hero-img-wrapper relative z-10 w-full sm:w-[50%] max-h-[35vh] sm:max-h-none aspect-square flex items-center justify-center opacity-0">
+            <img
+              src={`${basePath}/images/hero.webp`}
+              alt="Yoyoyo Neon Hero"
+              className="parallax-yoyo w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(255,62,189,0.3)] animate-float-slow"
+            />
+          </div>
+
+          {/* BOTTOM RIGHT TEXT - Repositioned for stacking layout */}
+          <div className="hero-text absolute bottom-8 right-6 md:bottom-12 md:right-12 text-right z-30 pointer-events-none opacity-0">
+            <p className="text-[#A855F7] font-sans font-bold text-[8px] md:text-[10px] tracking-widest uppercase">
+              Created for players.<br />Connected by passion.
+            </p>
+          </div>
         </div>
       </section>
 
       {/* COREANO SECTION */}
-      <section id="about" className="fade-in opacity-0 relative w-full py-24 px-6 md:px-12 mt-12 md:mt-24">
+      <section id="about" className="fade-in opacity-0 relative w-full py-24 px-6 md:px-12 mt-12 md:mt-24 overflow-hidden">
         <div className="bg-[#F2F0E9] rounded-[2rem] w-full flex flex-col md:flex-row relative overflow-hidden min-h-[600px] items-stretch">
 
           {/* PURPLE BLOB BACKGROUND - Optional fallback if the image doesn't have it */}
           <div className="absolute top-1/2 left-1/2 md:left-2/3 -translate-y-1/2 -translate-x-1/2 md:-translate-x-0 w-[800px] h-[800px] bg-[#A855F7] rounded-[40%_60%_70%_30%/40%_50%_60%_50%] opacity-20 blur-[20px] z-0 animate-spin-slow pointer-events-none"></div>
 
           {/* LEFT CONTENT */}
-          <div className="w-full md:w-1/2 p-10 md:p-20 z-10 flex flex-col justify-center text-black">
+          <div className="w-full md:w-1/2 p-10 md:p-20 z-20 flex flex-col justify-center text-black relative">
             <h3 className="font-display text-5xl md:text-6xl lg:text-[70px] leading-[1] tracking-tight mb-8">
               <span className="text-black block">YOYOYO is the</span>
               <span className="text-black block">rhythm of play</span>
@@ -211,7 +265,7 @@ export default function YoyoyoPage() {
             <img
               src={`${basePath}/images/coreano.webp`}
               alt="Yoyoyo Lifestyle"
-              className="absolute bottom-0 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-0 w-[150%] sm:w-[120%] md:w-[120%] max-w-none h-auto object-contain object-bottom"
+              className="absolute bottom-0 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-0 w-[130%] sm:w-[110%] md:w-[120%] max-w-none h-auto object-contain object-bottom"
             />
           </div>
         </div>
@@ -378,10 +432,10 @@ export default function YoyoyoPage() {
         </Link>
 
         <div className="flex gap-8 text-[10px] md:text-xs font-semibold tracking-widest text-white/50 uppercase">
-          <Link href="#home" onClick={(e) => handleScrollTo(e, '#home')} className="hover:text-white transition-colors">Home</Link>
-          <Link href="#about" onClick={(e) => handleScrollTo(e, '#about')} className="hover:text-white transition-colors">About</Link>
-          <Link href="#products" onClick={(e) => handleScrollTo(e, '#products')} className="hover:text-white transition-colors">Products</Link>
-          <Link href="#play" onClick={(e) => handleScrollTo(e, '#play')} className="hover:text-white transition-colors">Play</Link>
+          <a href="#home" onClick={(e) => handleScrollTo(e, '#home')} className="hover:text-white transition-colors cursor-pointer">Home</a>
+          <a href="#about" onClick={(e) => handleScrollTo(e, '#about')} className="hover:text-white transition-colors cursor-pointer">About</a>
+          <a href="#products" onClick={(e) => handleScrollTo(e, '#products')} className="hover:text-white transition-colors cursor-pointer">Products</a>
+          <a href="#play" onClick={(e) => handleScrollTo(e, '#play')} className="hover:text-white transition-colors cursor-pointer">Play</a>
         </div>
 
         <div className="flex items-center gap-6 text-[#FF3EBD]">
