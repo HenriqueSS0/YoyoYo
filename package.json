@@ -2,11 +2,14 @@
   "name": "wearebrand-next",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://HenriqueSS0.github.io/YoyoYo",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -t -d out"
   },
   "dependencies": {
     "@studio-freight/lenis": "^1.0.42",
@@ -23,6 +26,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
+    "gh-pages": "^6.3.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

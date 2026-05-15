@@ -7,6 +7,9 @@ import { ArrowUpRight, Menu } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+const isProd = process.env.NODE_ENV === "production";
+const basePath = isProd ? "/YoyoYo" : "";
+
 export default function YoyoyoPage() {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -163,7 +166,7 @@ export default function YoyoyoPage() {
         {/* HERO YOYO IMAGE */}
         <div className="hero-img-wrapper absolute top-[55vh] md:bottom-auto md:top-1/2 right-[-15%] md:-translate-y-1/2 md:right-0 z-10 w-[131%] sm:w-[120%] md:w-[60%] pointer-events-none flex justify-end opacity-0">
           <img
-            src="/images/hero.webp"
+            src={`${basePath}/images/hero.webp`}
             alt="Yoyoyo Neon Hero"
             className="parallax-yoyo w-full max-w-none h-auto drop-shadow-2xl animate-float-slow"
           />
@@ -206,7 +209,7 @@ export default function YoyoyoPage() {
           {/* RIGHT IMAGE */}
           <div className="w-full md:w-1/2 relative min-h-[350px] sm:min-h-[400px] md:h-auto z-10 pointer-events-none mt-4 md:mt-0">
             <img
-              src="/images/coreano.webp"
+              src={`${basePath}/images/coreano.webp`}
               alt="Yoyoyo Lifestyle"
               className="absolute bottom-0 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-0 w-[150%] sm:w-[120%] md:w-[120%] max-w-none h-auto object-contain object-bottom"
             />
@@ -236,7 +239,7 @@ export default function YoyoyoPage() {
           <div className="product-card bg-[#111] border border-white/5 rounded-2xl p-6 group hover:border-white/20 transition-colors flex flex-col items-center relative overflow-hidden opacity-0">
             <div className="w-full aspect-square flex items-center justify-center mb-6 relative z-10">
               <Image
-                src="/images/yoyoyo.webp"
+                src={`${basePath}/images/yoyoyo.webp`}
                 alt="Yoyo Pro"
                 width={300}
                 height={300}
@@ -261,7 +264,7 @@ export default function YoyoyoPage() {
           <div className="product-card bg-[#111] border border-white/5 rounded-2xl p-6 group hover:border-white/20 transition-colors flex flex-col items-center relative overflow-hidden opacity-0">
             <div className="w-full aspect-square flex items-center justify-center mb-6 relative z-10">
               <Image
-                src="/images/yoyoyo.webp"
+                src={`${basePath}/images/yoyoyo.webp`}
                 alt="Yoyo Neo"
                 width={300}
                 height={300}
@@ -285,7 +288,7 @@ export default function YoyoyoPage() {
           <div className="product-card bg-[#111] border border-white/5 rounded-2xl p-6 group hover:border-white/20 transition-colors flex flex-col items-center relative overflow-hidden opacity-0">
             <div className="w-full aspect-square flex items-center justify-center mb-6 relative z-10">
               <Image
-                src="/images/yoyoyo.webp"
+                src={`${basePath}/images/yoyoyo.webp`}
                 alt="Yoyo Flow"
                 width={300}
                 height={300}
@@ -309,7 +312,7 @@ export default function YoyoyoPage() {
           <div className="product-card bg-[#111] border border-white/5 rounded-2xl p-6 group hover:border-white/20 transition-colors flex flex-col items-center relative overflow-hidden opacity-0">
             <div className="w-full aspect-square flex items-center justify-center mb-6 relative z-10">
               <Image
-                src="/images/yoyoyo.webp"
+                src={`${basePath}/images/yoyoyo.webp`}
                 alt="Yoyo Digital"
                 width={300}
                 height={300}
@@ -354,13 +357,13 @@ export default function YoyoyoPage() {
           <div className="w-full lg:w-7/12 relative min-h-[350px] md:min-h-[400px] z-10 mt-12 lg:mt-0 flex justify-center md:block">
             {/* MOBILE IMAGE */}
             <img
-              src="/images/finalmobile.webp"
+              src={`${basePath}/images/finalmobile.webp`}
               alt="Digital Experience App Mobile"
               className="md:hidden w-[100%] sm:w-[80%] max-w-none h-auto drop-shadow-2xl"
             />
             {/* DESKTOP IMAGE */}
             <img
-              src="/images/secaofinal.webp"
+              src={`${basePath}/images/secaofinal.webp`}
               alt="Digital Experience App Desktop"
               className="hidden md:block absolute top-1/2 -translate-y-1/2 md:right-[-5%] lg:right-0 md:w-[90%] lg:w-[100%] max-w-none h-auto drop-shadow-2xl"
             />
