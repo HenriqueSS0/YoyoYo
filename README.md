@@ -78,7 +78,7 @@ YoyoYo/
 ## Contribuição
 Feedbacks, dicas de otimização e sugestões são extremamente bem-vindos! Sinta-se à vontade para abrir uma *Issue*, fazer um *Fork* e sugerir melhorias.
 
-##Link de visualização: **[https://henriquess0.github.io/YoyoYo/]**
+## Link de visualização: **[https://henriquess0.github.io/YoyoYo/]**
 
 ## Contato
 Desenvolvido por **[Henrique Sartori]**  
